@@ -9,7 +9,7 @@ use App\Services\WorkerService;
 
 class WorkerController extends Controller
 {
-    private WorkerService $worker_service;
+    private readonly WorkerService $worker_service;
 
     function __construct()
     {

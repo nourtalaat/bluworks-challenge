@@ -10,6 +10,7 @@ class WorkerService
 
   function __construct()
   {
+    // Should be configurable from database
     $this->max_distance = 2;
   }
 
@@ -72,7 +73,7 @@ class WorkerService
         404
       );
     }
-    
+
     return response()->json(
       [
         'clock_ins' => [
