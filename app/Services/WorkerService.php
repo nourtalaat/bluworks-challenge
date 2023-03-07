@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Enum\Clock\ClockingType;
+use App\Models\Clock;
+use App\Models\Worker;
 use Illuminate\Http\JsonResponse;
 
 class WorkerService
@@ -10,7 +13,7 @@ class WorkerService
 
   function __construct()
   {
-    // Should be configurable from database
+    // Should be configurable
     $this->max_distance = 2;
   }
 
@@ -37,6 +40,7 @@ class WorkerService
       );
     }
 
+    // Should be fetched as per the Worker's workplace's coordinates
     $allowed_latitude_centerpoint = 30.0493558;
     $allowed_longitude_centerpoint = 31.2403066;
 
@@ -49,11 +53,21 @@ class WorkerService
       );
     }
 
+    // Add error handling
+    $clock_in = Clock::create(
+      array(
+        'worker_id' => $worker_id,
+        'timestamp' => $timestamp,
+        'longitude' => $longitude,
+        'latitude' => $latitude,
+        'type' => ClockingType::IN->name,
+      )
+    );
+
+
     return response()->json(
       [
-        'clock_in' => [
-          'id' => '123'
-        ]
+        'clock_in' => $clock_in
       ],
       201
     );
@@ -74,16 +88,14 @@ class WorkerService
       );
     }
 
+    $clock_ins = Clock::query()
+      ->where('worker_id', '=', $worker_id)
+      ->where('type', '=', ClockingType::IN->name)
+      ->get();
+
     return response()->json(
       [
-        'clock_ins' => [
-          [
-            'id' => '1'
-          ],
-          [
-            'id' => '2'
-          ]
-        ]
+        'clock_ins' => $clock_ins
       ]
     );
   }
@@ -96,7 +108,8 @@ class WorkerService
    */
   private function ensure_worker_exists($worker_id)
   {
-    return $worker_id === '123';
+    $exists = Worker::query()->select()->where('id', '=', $worker_id)->exists();
+    return $exists;
   }
 
   /** * Calculates the distance in KMs between two lat/long coordinate combinations
