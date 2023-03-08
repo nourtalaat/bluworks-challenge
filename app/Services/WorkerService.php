@@ -3,9 +3,11 @@
 namespace App\Services;
 
 use App\Enum\Clock\ClockingType;
+use App\Exceptions\ResourceNotFound;
 use App\Models\Clock;
 use App\Models\Worker;
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
 class WorkerService
 {
@@ -33,27 +35,20 @@ class WorkerService
     $longitude
   )
   {
-    if (!$this->ensure_worker_exists($worker_id)) {
-      return response()->json(
-        ['error' => 'Worker not found'],
-        404
-      );
+    if (!$this->does_worker_exist($worker_id)) {
+      throw new ResourceNotFound($worker_id);
     }
 
     // Should be fetched as per the Worker's workplace's coordinates
     $allowed_latitude_centerpoint = 30.0493558;
     $allowed_longitude_centerpoint = 31.2403066;
 
-    $distance = $this->distance($latitude, $longitude, $allowed_latitude_centerpoint, $allowed_longitude_centerpoint);
+    $distance = $this->calculate_distance($latitude, $longitude, $allowed_latitude_centerpoint, $allowed_longitude_centerpoint);
 
     if ($distance > $this->max_distance) {
-      return response()->json(
-        ['error' => 'You must be in the vicinity of the workplace'],
-        400
-      );
+      throw new BadRequestException('You must be in the vicinity of the workplace');
     }
 
-    // Add error handling
     $clock_in = Clock::create(
       array(
         'worker_id' => $worker_id,
@@ -81,11 +76,8 @@ class WorkerService
    */
   public function get_clock_ins($worker_id)
   {
-    if (!$this->ensure_worker_exists($worker_id)) {
-      return response()->json(
-        ['error' => 'Worker not found'],
-        404
-      );
+    if (!$this->does_worker_exist($worker_id)) {
+      throw new ResourceNotFound($worker_id);
     }
 
     $clock_ins = Clock::query()
@@ -106,7 +98,7 @@ class WorkerService
    *
    * @return boolean
    */
-  private function ensure_worker_exists($worker_id)
+  private function does_worker_exist($worker_id)
   {
     $exists = Worker::query()->select()->where('id', '=', $worker_id)->exists();
     return $exists;
@@ -121,7 +113,7 @@ class WorkerService
    *
    * @return float
    */
-  private function distance($lat1, $lon1, $lat2, $lon2)
+  private function calculate_distance($lat1, $lon1, $lat2, $lon2)
   {
     if (($lat1 == $lat2) && ($lon1 == $lon2)) {
       return 0;

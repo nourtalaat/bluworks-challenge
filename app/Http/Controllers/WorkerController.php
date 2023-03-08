@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Enum\Clock\ClockingType;
+use App\Exceptions\ResourceNotFound;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use App\Services\WorkerService;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
 class WorkerController extends Controller
 {
@@ -17,15 +18,15 @@ class WorkerController extends Controller
         $this->worker_service = new WorkerService();
     }
 
-  /** * Validates request payload and sends it to service method if it passes validation or returns a generic error message to thwart reverse engineering attempts
-   *
-   * @param Request $request User request object
-   *
-   * @return JsonResponse
-   */
+    /** * Validates request payload and sends it to service method if it passes validation or returns a generic error message to thwart reverse engineering attempts
+     *
+     * @param Request $request User request object
+     *
+     * @return JsonResponse
+     */
     public function clock_in(Request $request)
     {
-      // Requests made with future timestamps or more than a minute ago are not allowed
+        // Requests made with future timestamps or more than a minute ago are not allowed
         $now = time();
         $minimum_timestamp = $now - 60;
 
@@ -44,20 +45,32 @@ class WorkerController extends Controller
             );
         }
 
-        return $this->worker_service->clock_in(
-            $request->worker_id,
-            $request->timestamp,
-            $request->latitude,
-            $request->longitude
-        );
+        try {
+            return $this->worker_service->clock_in(
+                $request->worker_id,
+                $request->timestamp,
+                $request->latitude,
+                $request->longitude
+            );
+        } catch (ResourceNotFound $e) {
+            return response()->json(
+                ['error' => 'Worker not found'],
+                404
+            );
+        } catch (BadRequestException $e) {
+            return response()->json(
+                ['error' => $e->getMessage()],
+                400
+            );
+        }
     }
 
-  /** * Ensures request has the worker_id query parameter and sends it to service method
-   *
-   * @param Request $request User request object
-   *
-   * @return JsonResponse
-   */
+    /** * Ensures request has the worker_id query parameter and sends it to service method
+     *
+     * @param Request $request User request object
+     *
+     * @return JsonResponse
+     */
     public function get_clock_ins(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -71,6 +84,13 @@ class WorkerController extends Controller
             );
         }
 
-        return $this->worker_service->get_clock_ins($request->worker_id);
+        try {
+            return $this->worker_service->get_clock_ins($request->worker_id);
+        } catch (ResourceNotFound $e) {
+            return response()->json(
+                ['error' => 'Worker not found'],
+                404
+            );
+        }
     }
 }
