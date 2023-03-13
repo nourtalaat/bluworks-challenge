@@ -1,66 +1,46 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+## Bluworks Challenge
+This project serves as an answer to the technical assessment as requested by Bluworks.
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+### Problem Statement
+We needed to implement two endpoints that enable logging a clock-in and fetching the clock-ins for a given worker:
+* `POST /worker/clock-in`
+* `GET /worker/clock-ins`
 
-## About Laravel
+This also included performing the following steps:
+* Creating the relevant database models w/ the appropriate migrations.
+* Having a rudimentary file structure with clearly defined responsibilities for each type of module, e.g. controllers and services.
+* Crafting test cases, i.e. Postman collection w/ examples, and implementing them in a suitable way, e.g. integration tests.
+* Documenting this piece of software, i.e. this README, Swagger, and the Postman collection.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### Getting Started
+* In the `getting_started` directory in the root of this repository you'll find two files:
+  * `bluworks_mysql_test_dump.sql`: MySQL database dump to be used for testing purposes.
+  * `bluworks-challenge.postman_collection.json`: Postman collection export to be used for testing/documentation purposes.
+* After importing the database dump you could start the Laravel server: `php artisan serve` and test with either [Swagger](http://localhost:8000/api/docs) or the Postman collection.
+* For the automated tests I've crafted a number of integrations tests to help demonstrate what a more complete version could look like, you could run these tests with: `php artisan test`.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Design Decisions
+* Test cases: I've utilized only integration tests instead of a combination of integration and unit tests due to both the simplicity of the task flows and the inadequacy of the unit tests had they been implemented, e.g. due to having `private` methods we'd have had to combine the logic of these methods with their callers.
+* Error response messages: With the exception of the resource not found and the max vicinity distance errors (Which was done to help clients present helpful messages) I've decided to keep the messages intentionally vague to give possible malicious actors a harder time reverse engineering the validation checks.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Recognized Shortcomings
+* The test cases don't cover 100% of the possible scenarios, e.g. the different combinations of missing body attributes, reasoning: time constraints.
+* Test methods don't follow the PHP Laravel documenting convention, reasoning: I've determined this to be redundant since the test case method names themselves are self-explanatory and don't require further documentation, additionally they're not called by any users, so the documenting strings wouldn't be helpful to anyone either.
+* In the tests for the `GET /worker/clock-ins` endpoint in the test case method: `test_the_application_returns_array_of_clock_ins_for_the_worker` the `type` seems not to be returned from the model creation, this should've been investigated and fixed, reasoning: time constraints.
+* Swagger configurations are separated from the actual implementations, e.g. if we change the response type in one of the endpoints it wouldn't automatically reflect in the responses provided by Swagger, which is not DRY code and opens space for mismatching configuration, this should've been investigated and had a solution found, reasoning: since this is a PoC task with no conceivable foreseen changes in the future this was seen as a possible waste of time and was instead acknowledged here as a known issue.
+* Swagger configuration for the `POST /worker/clock-in` endpoint has an issue in the response schemas that causes only one of the two responses with a `400` status code to be displayed, this should've been investigated and fixed, reasoning: very minor issue, possibly stemming from external dependency issue, and would've been a time drain.
 
-## Learning Laravel
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Note: This list doesn't mention shortcomings that are inherently part of the requirements, e.g. worker registration and hard-coded coordinates.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### Possible Areas of Improvement
+* Authenticating the requests.
+* Ensuring data integrity, because as it stands currently the data sent by the client has to pass a number of basic checks, but we don't validate the authenticity of the data provided, e.g. timestamp or the coordinates, possible improvements:
+  * Calculating the `timestamp` on the server-side instead of receiving it from the client-side.
+  * Implementing guarantees to ensure that the coordinates are retrieved directly from the GPS sensor and are not arbitrary, I'm not exactly sure about how such a measure could be implemented, but even if done this would present it's own set of challenges, including dealing with GPS spoofing.
+* Using error codes instead of error messages, this could make it easier for the clients to understand the nature of the error (If we'd like to disclose it) without making it readily accessible to a malicious actor.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Used References
+* [Distance calculation](https://www.geodatasource.com/developers/php)
 
-## Laravel Sponsors
-
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
-
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Note: Obviously more references were used, but this is the only case where a direct copy/paste of code was done, so I felt it was noteworthy.
