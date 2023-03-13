@@ -38,7 +38,6 @@ class WorkerController extends Controller
         ]);
 
         if ($validator->fails()) {
-            echo $validator->errors();
             return response()->json(
                 ['error' => 'Invalid request'],
                 400
