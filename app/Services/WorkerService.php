@@ -6,7 +6,6 @@ use App\Enum\Clock\ClockingType;
 use App\Exceptions\ResourceNotFound;
 use App\Models\Clock;
 use App\Models\Worker;
-use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
 class WorkerService
