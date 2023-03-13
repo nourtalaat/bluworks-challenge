@@ -46,11 +46,17 @@ class WorkerController extends Controller
         }
 
         try {
-            return $this->worker_service->clock_in(
+            $clock_in = $this->worker_service->clock_in(
                 $request->worker_id,
                 $request->timestamp,
                 $request->latitude,
                 $request->longitude
+            );
+            return response()->json(
+                [
+                    'clock_in' => $clock_in
+                ],
+                201
             );
         } catch (ResourceNotFound $e) {
             return response()->json(
@@ -85,7 +91,12 @@ class WorkerController extends Controller
         }
 
         try {
-            return $this->worker_service->get_clock_ins($request->worker_id);
+            $clock_ins = $this->worker_service->get_clock_ins($request->worker_id);
+            return response()->json(
+                [
+                'clock_ins' => $clock_ins
+                ]
+            );
         } catch (ResourceNotFound $e) {
             return response()->json(
                 ['error' => 'Worker not found'],

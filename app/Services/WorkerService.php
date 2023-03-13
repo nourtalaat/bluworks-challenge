@@ -26,7 +26,7 @@ class WorkerService
    * @param $latitude Latitude sent by the worker for the place of the clock-in
    * @param $longitude Longitude sent by the worker for the place of the clock-in
    *
-   * @return JsonResponse
+   * @return Clock
    */
   public function clock_in(
     $worker_id,
@@ -60,19 +60,14 @@ class WorkerService
     );
 
 
-    return response()->json(
-      [
-        'clock_in' => $clock_in
-      ],
-      201
-    );
+    return $clock_in;
   }
 
   /** * Returns an array of clock-ins for the passed worker ID
    *
    * @param string $worker_id Worker ID to fetch the clock-ins for
    *
-   * @return JsonResponse
+   * @return Clock[]
    */
   public function get_clock_ins($worker_id)
   {
@@ -85,11 +80,7 @@ class WorkerService
       ->where('type', '=', ClockingType::IN->name)
       ->get();
 
-    return response()->json(
-      [
-        'clock_ins' => $clock_ins
-      ]
-    );
+      return $clock_ins;
   }
 
   /** * Checks whether the passed worker ID exists
