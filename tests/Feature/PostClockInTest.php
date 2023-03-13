@@ -40,7 +40,20 @@ class PostClockInTest extends TestCase
 
         $response->assertStatus(400);
         $response->assertContent('{"error":"You must be in the vicinity of the workplace"}');
+    }
 
+    public function test_the_application_returns_400_if_timestamp_unacceptable(): void
+    {
+        $worker = Worker::create();
+        $response = $this->post('/worker/clock-in', array(
+            'worker_id' => "$worker->id",
+            'timestamp' => time()-70,
+            'latitude' => 20,
+            'longitude' => 20,
+        ));
+
+        $response->assertStatus(400);
+        $response->assertContent('{"error":"Invalid request"}');
     }
 
     public function test_the_application_creates_clock_in_returns_it(): void

@@ -9,10 +9,6 @@ use Tests\TestCase;
 
 class GetClockInsTest extends TestCase
 {
-    /**
-     * I believe these are not very useful given that the
-     * function name is very explicit and self explanatory
-     */
     public function test_the_application_returns_400_if_worker_id_is_missing(): void
     {
         $response = $this->get('/worker/clock-ins');
