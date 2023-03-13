@@ -1,4 +1,5 @@
 {
+    "name": "Bluworks Challenge",
     "private": true,
     "scripts": {
         "dev": "vite",

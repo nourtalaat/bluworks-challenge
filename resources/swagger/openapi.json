@@ -1,0 +1,216 @@
+{
+    "openapi": "3.0.2",
+    "info": {
+        "title": "Bluworks Challenge",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http:\/\/localhost:8000"
+        }
+    ],
+    "paths": {
+        "\/worker\/clock-in": {
+            "post": {
+                "summary": "Registers a clock-in",
+                "requestBody": {
+                    "description": "Clock-in details",
+                    "content": {
+                        "application\/json": {
+                            "schema": {
+                                "$ref": "#\/components\/schemas\/PostClockIn"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "$ref": "#\/components\/responses\/PostClockInsResponse"
+                    },
+                    "400": {
+                        "$ref": "#\/components\/responses\/BadRequestResponse"
+                    },
+                    "402": {
+                        "$ref": "#\/components\/responses\/PostClockInBadVicinityResponse"
+                    },
+                    "404": {
+                        "$ref": "#\/components\/responses\/WorkerNotFoundResponse"
+                    }
+                }
+            }
+        },
+        "\/worker\/clock-ins": {
+            "get": {
+                "summary": "Gets the clock-ins of a given worker",
+                "parameters": [
+                    {
+                        "name": "worker_id",
+                        "in": "query",
+                        "description": "Worker ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "$ref": "#\/components\/responses\/GetClockInsResponse"
+                    },
+                    "400": {
+                        "$ref": "#\/components\/responses\/BadRequestResponse"
+                    },
+                    "404": {
+                        "$ref": "#\/components\/responses\/WorkerNotFoundResponse"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "PostClockIn": {
+                "type": "object",
+                "properties": {
+                    "worker_id": {
+                        "type": "string"
+                    },
+                    "timestamp": {
+                        "description": "Unix timestamp of the clock-in",
+                        "type": "integer"
+                    },
+                    "latitude": {
+                        "type": "number",
+                        "maximum": 90,
+                        "minimum": -90
+                    },
+                    "longitude": {
+                        "type": "number",
+                        "maximum": 180,
+                        "minimum": -180
+                    }
+                }
+            }
+        },
+        "responses": {
+            "PostClockInsResponse": {
+                "description": "Successfully registered clock-in",
+                "content": {
+                    "application\/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "clock-in": {
+                                    "type": "object",
+                                    "example": [
+                                        {
+                                            "id": "1",
+                                            "worker_id": "123",
+                                            "timestamp": 1678220445,
+                                            "longitude": 31.24,
+                                            "latitude": 30.03,
+                                            "type": "IN",
+                                            "created_at": "2023-03-07T20:20:55.000000Z",
+                                            "updated_at": "2023-03-07T20:20:55.000000Z"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "WorkerNotFoundResponse": {
+                "description": "Resource not found",
+                "content": {
+                    "application\/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "example": "Worker not found"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "BadRequestResponse": {
+                "description": "Validation errors",
+                "content": {
+                    "application\/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "example": "Invalid request"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "GetClockInsResponse": {
+                "description": "Successfully fetched clock-ins",
+                "content": {
+                    "application\/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "clock-ins": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "example": [
+                                        {
+                                            "id": "1",
+                                            "worker_id": "123",
+                                            "timestamp": 1678220445,
+                                            "longitude": 31.24,
+                                            "latitude": 30.03,
+                                            "type": "IN",
+                                            "created_at": "2023-03-07T20:20:55.000000Z",
+                                            "updated_at": "2023-03-07T20:20:55.000000Z"
+                                        },
+                                        {
+                                            "id": "2",
+                                            "worker_id": "123",
+                                            "timestamp": 1678330421,
+                                            "longitude": 30.24,
+                                            "latitude": 31.03,
+                                            "type": "IN",
+                                            "created_at": "2023-03-08T17:07:55.000000Z",
+                                            "updated_at": "2023-03-08T17:07:55.000000Z"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "PostClockInBadVicinityResponse": {
+                "description": "Validation error",
+                "content": {
+                    "application\/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "error": {
+                                    "type": "string",
+                                    "example": "You must be in the vicinity of the workplace"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

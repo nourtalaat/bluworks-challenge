@@ -3,12 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\ResourceNotFound;
+use App\OpenApi\Parameters\GetClockInsParameters;
+use App\OpenApi\RequestBodies\PostClockInRequestBody;
+use App\OpenApi\Responses\GetClockInsResponse;
+use App\OpenApi\Responses\BadRequestResponse;
+use App\OpenApi\Responses\WorkerNotFoundResponse;
+use App\OpenApi\Responses\PostClockInResponse;
+use App\OpenApi\Responses\PostClockInBadVicinityResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
 use App\Services\WorkerService;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
+use Vyuldashev\LaravelOpenApi\Attributes as OpenApi;
 
+#[OpenApi\PathItem]
 class WorkerController extends Controller
 {
     private readonly WorkerService $worker_service;
@@ -18,12 +27,18 @@ class WorkerController extends Controller
         $this->worker_service = new WorkerService();
     }
 
-    /** * Validates request payload and sends it to service method if it passes validation or returns a generic error message to thwart reverse engineering attempts
+    /** Registers a clock-in
      *
      * @param Request $request User request object
      *
      * @return JsonResponse
      */
+    #[OpenApi\Operation]
+    #[OpenApi\RequestBody(factory: PostClockInRequestBody::class)]
+    #[OpenApi\Response(factory: PostClockInResponse::class, statusCode: 201)]
+    #[OpenApi\Response(factory: BadRequestResponse::class, statusCode: 400)]
+    #[OpenApi\Response(factory: PostClockInBadVicinityResponse::class, statusCode: 400)]
+    #[OpenApi\Response(factory: WorkerNotFoundResponse::class, statusCode: 404)]
     public function clock_in(Request $request)
     {
         // Requests made with future timestamps or more than a minute ago are not allowed
@@ -70,12 +85,17 @@ class WorkerController extends Controller
         }
     }
 
-    /** * Ensures request has the worker_id query parameter and sends it to service method
+    /** Gets the clock-ins of a given worker
      *
      * @param Request $request User request object
      *
      * @return JsonResponse
      */
+    #[OpenApi\Operation]
+    #[OpenApi\Parameters(factory: GetClockInsParameters::class)]
+    #[OpenApi\Response(factory: GetClockInsResponse::class, statusCode: 200)]
+    #[OpenApi\Response(factory: BadRequestResponse::class, statusCode: 400)]
+    #[OpenApi\Response(factory: WorkerNotFoundResponse::class, statusCode: 404)]
     public function get_clock_ins(Request $request)
     {
         $validator = Validator::make($request->all(), [
