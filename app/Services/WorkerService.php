@@ -68,7 +68,7 @@ class WorkerService
    *
    * @param string $worker_id Worker ID to fetch the clock-ins for
    * 
-   * @throws ResourceNotFound If the worker is not found
+   * @throws ResourceNotFound If the worker does not exist
    * @return Clock[]
    */
   public function get_clock_ins($worker_id)
