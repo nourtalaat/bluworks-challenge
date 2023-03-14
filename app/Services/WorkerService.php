@@ -24,7 +24,9 @@ class WorkerService
    * @param $timestamp Timestamp of the request made to register the clock-in
    * @param $latitude Latitude sent by the worker for the place of the clock-in
    * @param $longitude Longitude sent by the worker for the place of the clock-in
-   *
+   * 
+   * @throws ResourceNotFound If the worker does not exist
+   * @throws BadRequestException If the distance between coordinates exceeds the allowed maximum
    * @return Clock
    */
   public function clock_in(
@@ -65,7 +67,8 @@ class WorkerService
   /** * Returns an array of clock-ins for the passed worker ID
    *
    * @param string $worker_id Worker ID to fetch the clock-ins for
-   *
+   * 
+   * @throws ResourceNotFound If the worker is not found
    * @return Clock[]
    */
   public function get_clock_ins($worker_id)
